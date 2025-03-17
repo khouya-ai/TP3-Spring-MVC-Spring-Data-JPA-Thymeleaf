@@ -4,19 +4,22 @@
     <meta charset="UTF-8">
     <title>Patients</title>
     <link rel="stylesheet" href="/webjars/bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
 <div class="p-3">
     <div class="card">
         <div class="card-header">List Patients</div>
         <div class="card-body">
-            <form th:action="@{index}" method="get">
-                <label>
-                    keyword:
-                    <input type="text" name="keyword" th:value="${keyword}">
-                </label>
-                <button type="submit" class="btn btn-info">Chercher</button>
+            <form th:action="@{index}" method="get" class="d-flex align-items-center">
+                    <label for="keyword" class="me-2">Keyword:</label>
+                    <input type="text" name="keyword" th:value="${keyword}" id="keyword" class="form-control w-25 me-1" placeholder="Nom">
+
+                <button type="submit" class="btn btn-info">
+                    <i class="bi bi-search"></i>
+                </button>
             </form>
+
             <table class="table">
                 <thead>
                 <tr>
@@ -34,6 +37,13 @@
                     <td th:text="${p.dateNaissance}"></td>
                     <td th:text="${p.malade}"></td>
                     <td th:text="${p.score}"></td>
+                    <td>
+                        <a onclick="javascript:return confirm('Etes vous sure?')"
+                           th:href="@{delete(id=${p.id}, keyword=${keyword}, page=${currentPage})}"
+                           class="btn btn-danger">
+                            <i class="bi bi-search"></i>
+                        </a>
+                    </td>
                 </tr>
                 </tbody>
             </table>
@@ -41,7 +51,7 @@
                 <li th:each="page,item:${pages}">
                     <a th:href="@{/index(page=${item.index},keyword=${keyword})}"
                        th:class="${item.index == currentPage} ? 'btn btn-info ms-1' : 'btn btn-outline-info ms-1'"
-                       th:text="${item.index}"></a>
+                       th:text="${item.index + 1}"></a>
                 </li>
             </ul>
         </div>
