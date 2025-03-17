@@ -1,4 +1,4 @@
-package khouya.site.demo;
+package khouya.site.Hopital;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
