@@ -3,6 +3,7 @@ Réalisé par ``Oussama KHOUYA``
 
 L'objectif de cette activité est de créer une page web pour gérer des patients à l'aide du moteur de template Thymeleaf.
 
+## Partie 1 :
 ### Créer un project springboot avec les bibliothèque Spring Web, Thylemeaf et Spring Data JPA, Mysql, lombok
 ![img.png](img/img.png)
 
@@ -179,3 +180,50 @@ public String delete(Long id, String keyword, int page){
 ![img.png](img/img_4.png)
 
 ![img_1.png](img/img_5.png)
+
+## Partie 2 :
+
+### Ajouter une page template
+- créer un fichier template1.html
+- ajouter la bibiothèque thymeleaf-layout-dialect san pom.xml
+- ajouter les names spaces de thyleleaf et layout dans votre template.html : xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+- ajouter la section où votre donneés seront affichées
+````html
+<section layout:fragment="content1"></section>
+````
+- ajouter la section avec le contenu dans votre fichier cible
+````html
+<div layout:fragment="content1">
+// Votre contenu exemple : formulaire ou tableau
+</div>
+````
+- Exemple: les deux fichiers patients.html et formPatients utilise le nabar hérité de template1.html
+![img_10.png](img/img_10.png)
+![img_11.png](img/img_11.png)
+
+### Ajouter la validation pour le Formulaire
+- ajouter la bibliothèque spring-boot-starter-validation
+- ajouter les annotations de la validation sur les attributs de l'entité
+````java
+public class Patient{
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @NotEmpty
+    @Size(min = 5, max = 50)
+    private String nom;
+    @NotNull
+    @Past
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date dateNaissance;
+    private boolean malade;
+    @DecimalMax("100")
+    private int score;
+}
+````
+- ajouter cette balise pou afficher les erreurs sous les champs
+````html
+<span class="text-danger" th:errors="${patient.nom}"></span>
+````
+![img_7.png](img/img_7.png)
