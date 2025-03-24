@@ -4,7 +4,7 @@ Réalisé par ``Oussama KHOUYA``
 L'objectif de cette activité est de créer une page web pour gérer des patients à l'aide du moteur de template Thymeleaf.
 
 ### Créer un project springboot avec les bibliothèque Spring Web, Thylemeaf et Spring Data JPA, Mysql, lombok
-![img.png](img.png)
+![img.png](img/img.png)
 
 ### Créer l'entité Patient, son repositories et ajouter des patients à la BD
 ```java
@@ -85,7 +85,7 @@ public class PatientController {
 </body>
 </html>
 ```
-![img_1.png](img_1.png)
+![img_1.png](img/img_1.png)
 ### Ajouter la pagination au tableau
 - On ajoute ma methode **PageRequest.of(page, size)** à notre code
 ```java
@@ -117,8 +117,8 @@ public class PatientController {
                 </li>
             </ul>
 ```
-![img_2.png](img_2.png)
-### Recherhcer un patient par nom
+![img_2.png](img/img_2.png)
+### Recherher un patient par nom
 - On ajoute la method **findPatientsByNomContaining** dans le repository
 ```java
 public interface PatientRepository extends JpaRepository<Patient, Long> {
@@ -155,5 +155,27 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     <button type="submit" class="btn btn-info">Chercher</button>
 </form>
 ```
-![img_3.png](img_3.png)
+![img_3.png](img/img_3.png)
 
+### Supprimer un patient
+- On ajoute une méthode pour la suppression
+````java
+ @GetMapping("/delete")
+public String delete(Long id, String keyword, int page){
+    patientRepo.deleteById(id);
+    return "redirect:/index?page=" + page + "&keyword=" + keyword;
+}
+````
+- On ajoute une boutton delete dans chaque ligne du tableau
+````html
+  <td>
+    <a onclick="javascript:return confirm('Etes vous sure?')"
+       th:href="@{delete(id=${p.id}, keyword=${keyword}, page=${currentPage})}"
+       class="btn btn-danger">
+        <i class="bi bi-trash"></i>
+    </a>
+</td>
+````
+![img.png](img.png)
+
+![img_1.png](img_1.png)
