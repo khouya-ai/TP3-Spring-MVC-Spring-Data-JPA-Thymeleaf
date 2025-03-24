@@ -176,6 +176,6 @@ public String delete(Long id, String keyword, int page){
     </a>
 </td>
 ````
-![img.png](img.png)
+![img.png](img/img_4.png)
 
-![img_1.png](img_1.png)
+![img_1.png](img/img_5.png)

@@ -1,5 +1,6 @@
 package khouya.site.Hopital.web;
 
+import jakarta.validation.Valid;
 import khouya.site.Hopital.entities.Patient;
 import khouya.site.Hopital.repository.PatientRepository;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,8 +51,12 @@ public class PatientController {
     }
 
     @PostMapping("/save")
-    public String save(Model model,Patient patient){
+    public String save(Model model, @Valid Patient patient, BindingResult bindingResult){
+        if(bindingResult.hasErrors()){
+            return "formPatients";
+        }
+
         patientRepo.save(patient);
-        return "redirect:/index";
+        return "redirect:/formPatients";
     }
 }
