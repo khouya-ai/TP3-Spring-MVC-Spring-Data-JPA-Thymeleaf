@@ -227,3 +227,51 @@ public class Patient{
 <span class="text-danger" th:errors="${patient.nom}"></span>
 ````
 ![img_7.png](img/img_7.png)
+
+## Partie 3 : Sécurité avec Spring security
+pour sécurisé notre application on utilise spring-boot-starter-security
+
+1. On ajoute la dépendance spring security
+  ````xml
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+  ````
+2. on ajoute une classe SecuritConfig pour déterminer nos régles de sécurités
+````java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+
+    @Bean
+    public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder passwordEncoder){
+        String encodedPassword = passwordEncoder.encode("1234");
+        System.out.println(encodedPassword);
+        return new InMemoryUserDetailsManager(
+                User.withUsername("user1").password(encodedPassword).roles("USER").build(),
+                User.withUsername("user2").password(encodedPassword).roles("USER").build(),
+                User.withUsername("admin").password(encodedPassword).roles("USER","ADMIN").build()
+        );}
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        return httpSecurity
+                .formLogin(Customizer.withDefaults())
+                .authorizeHttpRequests(ar->ar.requestMatchers("/deletePatient/**").hasRole("ADMIN"))
+                .authorizeHttpRequests(ar->ar.requestMatchers("/admin/**").hasRole("ADMIN"))
+                .authorizeHttpRequests(ar->ar.requestMatchers("/user/**").hasRole("USER"))
+                .authorizeHttpRequests(ar->ar.anyRequest().authenticated())
+                .build();
+    }
+
+    @Bean
+     PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+}
+````
+3. On peut accéder au login form avec localhost:8080/login
+![img.png](img/img_12.png)
+4. pour faire le logout : localhost:8080/logout et clique le button Log Out
+![img.png](img/img_13.png)
