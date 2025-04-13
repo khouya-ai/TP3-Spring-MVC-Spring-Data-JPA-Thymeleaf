@@ -275,3 +275,51 @@ public class SecurityConfig {
 ![img.png](img/img_12.png)
 4. pour faire le logout : localhost:8080/logout et clique le button Log Out
 ![img.png](img/img_13.png)
+5. On ajoute des utilisateurs avec des roles différents
+```java
+  @Bean
+  public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder passwordEncoder){
+      String encodedPassword = passwordEncoder.encode("1234");
+      System.out.println(encodedPassword);
+      return new InMemoryUserDetailsManager(
+              User.withUsername("user1").password(encodedPassword).roles("USER").build(),
+              User.withUsername("user2").password(encodedPassword).roles("USER").build(),
+              User.withUsername("admin").password(encodedPassword).roles("USER","ADMIN").build()
+      );}
+```
+
+6. On change les path pour configurer les autorisations
+```java
+@GetMapping("/admin/delete")
+
+@GetMapping("/user/index")
+
+@PostMapping("/admin/save")
+```
+
+7. On ajoute la bibliothèque spring-boot-starter-thymeleaf-extras-springsecurity5 pour configurer les springsecurity dans thymeleaf
+```xml
+<dependency>
+    <groupId>org.thymeleaf.extras</groupId>
+    <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+    <version>3.1.0.M1</version>
+</dependency>
+```
+8. ajouter les conditions d'affichage dans les fichiers html
+```html
+<td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+      <a
+         th:href="@{/admin/editPatient(id=${p.id})}"
+         class="btn btn-success">
+          <i class="bi bi-pen"></i>
+      </a>
+</td>
+```
+9. le resultat obtenue est deux different pages pour chaque role
+- page index pour l'utilisateur
+![img_15.png](img/img_15.png)
+
+- page index pour l'admin
+![img_16.png](img/img_16.png)
+- si l'utilisateur essaye d'accéder à une page admin comme http://localhost:8080/admin/editPatient?id=3
+![img_14.png](img/img_14.png)

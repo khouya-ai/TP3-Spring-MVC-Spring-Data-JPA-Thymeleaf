@@ -14,7 +14,7 @@
         <div class="card">
             <div class="card-header">List Patients</div>
             <div class="card-body">
-                <form th:action="@{index}" method="get" class="d-flex align-items-center">
+                <form th:action="@{/user/index}" method="get" class="d-flex align-items-center">
                     <label for="keyword" class="me-2">Keyword:</label>
                     <input type="text" name="keyword" th:value="${keyword}" id="keyword" class="form-control w-25 me-1" placeholder="Nom">
 
@@ -40,16 +40,16 @@
                         <td th:text="${p.dateNaissance}"></td>
                         <td th:text="${p.malade} ? 'Oui' : 'Non'"></td>
                         <td th:text="${p.score}"></td>
-                        <td>
+                        <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
                             <a onclick="javascript:return confirm('Etes vous sure?')"
-                               th:href="@{delete(id=${p.id}, keyword=${keyword}, page=${currentPage})}"
+                               th:href="@{/admin/delete(id=${p.id}, keyword=${keyword}, page=${currentPage})}"
                                class="btn btn-danger">
                                 <i class="bi bi-trash"></i>
                             </a>
                         </td>
-                        <td>
+                        <td th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
                             <a
-                               th:href="@{editPatient(id=${p.id})}"
+                               th:href="@{/admin/editPatient(id=${p.id})}"
                                class="btn btn-success">
                                 <i class="bi bi-pen"></i>
                             </a>
@@ -59,7 +59,7 @@
                 </table>
                 <ul class="nav nav-pills">
                     <li th:each="page,item:${pages}">
-                        <a th:href="@{/index(page=${item.index},keyword=${keyword})}"
+                        <a th:href="@{/user/index(page=${item.index},keyword=${keyword})}"
                            th:class="${item.index == currentPage} ? 'btn btn-info ms-1' : 'btn btn-outline-info ms-1'"
                            th:text="${item.index + 1}"></a>
                     </li>
