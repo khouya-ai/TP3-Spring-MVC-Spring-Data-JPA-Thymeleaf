@@ -315,11 +315,61 @@ public class SecurityConfig {
       </a>
 </td>
 ```
-9. le resultat obtenue est deux different pages pour chaque role
+9. le resultat obtenu est deux differents pages pour chaque role
 - page index pour l'utilisateur
+
 ![img_15.png](img/img_15.png)
 
 - page index pour l'admin
+
 ![img_16.png](img/img_16.png)
+
 - si l'utilisateur essaye d'accéder à une page admin comme http://localhost:8080/admin/editPatient?id=3
+
 ![img_14.png](img/img_14.png)
+
+10. personalisé la page login
+- changer dans la classe [SecurityConfig.java](src/main/java/khouya/site/Hopital/security/SecurityConfig.java)
+```java
+httpSecurity.formLogin(form -> form.loginPage("/login").permitAll())
+```
+- ajouter le path /login dans le controller
+```java
+  @GetMapping("/login")
+public String login() {
+  return "login";
+}
+```
+- ajouter une page login.html
+```html
+<div class="col-md-6 offset-3">
+        <div class="card">
+            <div class="card-header">
+                Authentication
+            </div>
+            <div class="card-body">
+                <form th:action="@{/login}" method="POST">
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username:</label>
+                        <input type="text" class="form-control" id="username"   name="username"  required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password:</label>
+                        <input type="password" class="form-control" id="password"   name="password"  required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="remember" name="remember-me" value="true">
+                            <label class="form-check-label" for="remember">Remeber me:</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+```
+- le resultat est une page de login personalisé
+
+![img.png](img.png)
