@@ -229,6 +229,8 @@ public class Patient{
 ![img_7.png](img/img_7.png)
 
 ## Partie 3 : Sécurité avec Spring security
+### I - <u>Spring Security avec InMemomy Authentication</u>
+
 pour sécurisé notre application on utilise spring-boot-starter-security
 
 1. On ajoute la dépendance spring security
@@ -373,3 +375,66 @@ public String login() {
 - le resultat est une page de login personalisé
 
 ![img.png](img.png)
+
+### II - <u>Spring Security avec JDBC Authentication</u>
+Pour ajouter les utilsateurs et les roles dans une base de données on utilise JDBC Authentication
+
+1. Dans SecurityConfig.java on remplace InMemoryUserDetailsManager par JdbcUserDetailsManager
+```java
+@Bean
+    public  JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource){
+        // for the data source we will use the same as the global data
+        // source (defined in the application.properties file)
+        return new JdbcUserDetailsManager(dataSource);
+    }
+```
+2. On ajoute les tables pour les utilisateurs et les roles
+```sql
+create table if not exists users(
+                                    username varchar(50) not null primary key,
+    password varchar(500) not null,
+    enabled boolean not null
+    );
+create table if not exists  authorities (
+                                            username varchar(50) not null,
+    authority varchar(50) not null,
+    constraint fk_authorities_users foreign key(username) references users(username)
+    );
+-- create unique index ix_auth_username on authorities (username,authority);
+````
+3. modifier le fichier application.properties pour permettre à spring de créer les tables automatiquement
+```properties
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
+spring.jpa.generate-ddl=true
+```
+4. Ajouter des utilisateurs et des roles dans la base de données
+```java
+ @Bean
+    CommandLineRunner commandLineRunner(JdbcUserDetailsManager jdbcUserDetailsManager){
+
+        return args -> {
+            //To add users to the database
+            if (!jdbcUserDetailsManager.userExists("user1")){
+                String encodedPassword = passwordEncoder().encode("1234");
+                System.out.println(encodedPassword);
+                jdbcUserDetailsManager.createUser(User.withUsername("user1").password(encodedPassword).roles("USER").build());
+            }
+            if (!jdbcUserDetailsManager.userExists("user2")){
+                String encodedPassword = passwordEncoder().encode("1234");
+                System.out.println(encodedPassword);
+                jdbcUserDetailsManager.createUser(User.withUsername("user2").password(encodedPassword).disabled(true).roles("USER").build());
+            }
+            if (!jdbcUserDetailsManager.userExists("admin")){
+                String encodedPassword = passwordEncoder().encode("1234");
+                System.out.println(encodedPassword);
+                jdbcUserDetailsManager.createUser(User.withUsername("admin").password(encodedPassword).roles("USER","ADMIN").build());
+            }
+        };
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+```

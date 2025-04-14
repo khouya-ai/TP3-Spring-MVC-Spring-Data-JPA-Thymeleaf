@@ -9,7 +9,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
@@ -18,6 +21,13 @@ public class SecurityConfig {
 
 
     @Bean
+    public  JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource){
+        // for the data source we will use the same as the global data
+        // source (defined in the application.properties file)
+        return new JdbcUserDetailsManager(dataSource);
+    }
+
+   // @Bean
     public InMemoryUserDetailsManager inMemoryUserDetailsManager(PasswordEncoder passwordEncoder) {
         String encodedPassword = passwordEncoder.encode("1234");
         System.out.println(encodedPassword);
@@ -31,7 +41,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
-                .formLogin(form -> form.loginPage("/login").permitAll())
+                .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/").permitAll())
                 .rememberMe(auth -> auth.alwaysRemember(true))
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/webjars/**", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll())
                 .authorizeHttpRequests(ar -> ar.anyRequest().authenticated())
@@ -39,7 +49,7 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Bean
+    //@Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
