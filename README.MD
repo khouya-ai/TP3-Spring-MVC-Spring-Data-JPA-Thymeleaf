@@ -274,6 +274,7 @@ public class SecurityConfig {
 }
 ````
 3. On peut accéder au login form avec localhost:8080/login
+
 ![img.png](img/img_12.png)
 4. pour faire le logout : localhost:8080/logout et clique le button Log Out
 ![img.png](img/img_13.png)
@@ -388,7 +389,7 @@ Pour ajouter les utilsateurs et les roles dans une base de données on utilise J
         return new JdbcUserDetailsManager(dataSource);
     }
 ```
-2. On ajoute les tables pour les utilisateurs et les roles
+2. On ajoute les tables pour les utilisateurs et les roles 
 ```sql
 create table if not exists users(
                                     username varchar(50) not null primary key,
@@ -402,6 +403,7 @@ create table if not exists  authorities (
     );
 -- create unique index ix_auth_username on authorities (username,authority);
 ````
+![img_1.png](img/img_18.png)
 3. modifier le fichier application.properties pour permettre à spring de créer les tables automatiquement
 ```properties
 spring.jpa.defer-datasource-initialization=true
@@ -414,7 +416,7 @@ spring.jpa.generate-ddl=true
     CommandLineRunner commandLineRunner(JdbcUserDetailsManager jdbcUserDetailsManager){
 
         return args -> {
-            //To add users to the database
+            
             if (!jdbcUserDetailsManager.userExists("user1")){
                 String encodedPassword = passwordEncoder().encode("1234");
                 System.out.println(encodedPassword);
@@ -438,3 +440,80 @@ spring.jpa.generate-ddl=true
         return new BCryptPasswordEncoder();
     }
 ```
+
+### III - <u>Spring Security avec UserDetailsService Authentication</u>
+Pour configurer tous la logique de sécurité dans nos propres classes séparée on utilise UserDetailsService Authentication!
+1. Definir des entités [AppUser.java](src/main/java/khouya/site/Hopital/security/entities/AppUser.java) et [AppRole.java](src/main/java/khouya/site/Hopital/security/entities/AppRole.java) <br> ![img_1.png](img/img_17.png)
+2. Créer un repository pour chaque entité [AppRoleRepository.java](src/main/java/khouya/site/Hopital/security/repositories/AppRoleRepository.java) et [AppUserRepository.java](src/main/java/khouya/site/Hopital/security/repositories/AppUserRepository.java)
+3. Créer une classe [AccountServiceImpl.java](src/main/java/khouya/site/Hopital/security/service/Impl/AccountServiceImpl.java) qui implémente [AccountService.java](src/main/java/khouya/site/Hopital/security/service/AccountService.java)
+  ````java
+  public interface AccountService {
+      AppUser addNewUser(String username, String password, String email, String confirmPassword);
+      AppRole addNewRole(String role);
+      void addRoleToUser(String username, String role);
+      void removeRoleFromUser(String username, String role);
+      AppUser loadUserByUsername(String username);
+      AppRole loadRole(String role);
+  
+  }
+  ````
+4. Ajouter les utilisateurs et les roles dans la base de données, on utilise la méthode CommandLineRunner dans HopitalApplication.java
+  ```java
+  @Bean
+      CommandLineRunner CommandLineRunnerUserDetails(AccountService accountService) {
+          return args -> {
+              if (accountService.loadRole("USER") == null) {
+                  accountService.addNewRole("USER");
+              }
+              if (accountService.loadRole("ADMIN") == null) {
+                  accountService.addNewRole("ADMIN");
+              }
+              if (accountService.loadUserByUsername("user1") == null) {
+                  accountService.addNewUser("user1", "1234", "user1@gmail.com", "1234");
+                  accountService.addRoleToUser("user1", "USER");
+              }
+  
+              if (accountService.loadUserByUsername("user2") == null) {
+                  accountService.addNewUser("user2", "1234", "user2@gmail.com", "1234");
+                  accountService.addRoleToUser("user2", "USER");
+              }
+  
+              if (accountService.loadUserByUsername("admin") == null) {
+                  accountService.addNewUser("admin", "1234", "admin@gmail.com", "1234");
+                  accountService.addRoleToUser("admin", "USER");
+                  accountService.addRoleToUser("admin", "ADMIN");
+              }
+          };
+      }
+  ```
+5. Créer une classe UserDetailsServiceImpl qui implémente UserDetailsService qui cherche un utilisateur par username
+```java
+@Override
+public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+  var appUser = accountService.loadUserByUsername(username);
+  if (appUser == null) {
+    throw new UsernameNotFoundException(String.format("User %s not found", username));
+  }
+  return User
+          .withUsername(appUser.getUsername())
+          .password(appUser.getPassword())
+          .roles(
+                  appUser.getRoles().stream().map(
+                          AppRole::getRole
+                  ).toArray(String[]::new)
+          )
+          .build();
+}
+```
+6. modifier Security Filter pour prendre en consideration userDetailsService
+````java
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+  return httpSecurity
+          .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/").permitAll())
+          // ...
+          .userDetailsService(userDetailsService) // <--- HERE
+          .build();
+}
+````
+

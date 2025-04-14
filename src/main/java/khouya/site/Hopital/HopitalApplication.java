@@ -2,6 +2,7 @@ package khouya.site.Hopital;
 
 import khouya.site.Hopital.entities.Patient;
 import khouya.site.Hopital.repository.PatientRepository;
+import khouya.site.Hopital.security.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -31,7 +32,7 @@ public class HopitalApplication implements CommandLineRunner {
         patientRepo.save(new Patient(null, "Omar Omar", new Date(), true, 60));
     }
 
-    @Bean
+    //@Bean
     CommandLineRunner commandLineRunner(JdbcUserDetailsManager jdbcUserDetailsManager){
 
         return args -> {
@@ -57,5 +58,32 @@ public class HopitalApplication implements CommandLineRunner {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    CommandLineRunner CommandLineRunnerUserDetails(AccountService accountService) {
+        return args -> {
+            if (accountService.loadRole("USER") == null) {
+                accountService.addNewRole("USER");
+            }
+            if (accountService.loadRole("ADMIN") == null) {
+                accountService.addNewRole("ADMIN");
+            }
+            if (accountService.loadUserByUsername("user1") == null) {
+                accountService.addNewUser("user1", "1234", "user1@gmail.com", "1234");
+                accountService.addRoleToUser("user1", "USER");
+            }
+
+            if (accountService.loadUserByUsername("user2") == null) {
+                accountService.addNewUser("user2", "1234", "user2@gmail.com", "1234");
+                accountService.addRoleToUser("user2", "USER");
+            }
+
+            if (accountService.loadUserByUsername("admin") == null) {
+                accountService.addNewUser("admin", "1234", "admin@gmail.com", "1234");
+                accountService.addRoleToUser("admin", "USER");
+                accountService.addRoleToUser("admin", "ADMIN");
+            }
+        };
     }
 }
